@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Events — backend writes, anyone reads
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Matches — backend writes, anyone reads
+    match /matches/{matchId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Reactions — authenticated fans write their own, anyone reads
+    match /reactions/{reactionId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.fanId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Fans — authenticated user writes their own profile
+    match /fans/{fanId} {
+      allow read: if true;
+      allow create: if request.auth != null && fanId == request.auth.uid;
+      allow update: if request.auth != null && fanId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // Threads (comments) — authenticated fans post
+    match /threads/{eventId}/messages/{messageId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.fanId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Verdicts — backend writes, anyone reads
+    match /verdicts/{eventId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Verdict votes — authenticated fans vote once
+    match /verdict_votes/{voteId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if false;
+    }
+
+    // Forecasts — backend writes, anyone reads
+    match /forecasts/{forecastId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Fan matches — backend writes, matched fans read their own
+    match /fan_matches/{matchId} {
+      allow read: if request.auth != null
+        && (resource.data.fan1_id == request.auth.uid
+            || resource.data.fan2_id == request.auth.uid);
+      allow write: if false;
+    }
+
+    // Direct threads — only matched fans can read/write
+    match /direct_threads/{threadId}/messages/{messageId} {
+      allow read, create: if request.auth != null;
+      allow update, delete: if false;
+    }
+  }
+}
