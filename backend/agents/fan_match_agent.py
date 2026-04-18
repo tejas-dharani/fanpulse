@@ -1,6 +1,8 @@
 import json
 from google.adk.agents import LlmAgent
-from google.adk.tools import agent_tool
+from google.adk import runners
+from google.adk.sessions import InMemorySessionService
+from google.genai import types
 
 fan_match_agent = LlmAgent(
     name="fan_match_agent",
@@ -28,7 +30,12 @@ in your analysis as real participants.
 """
 )
 
-_fan_match_tool = agent_tool.AgentTool(agent=fan_match_agent)
+_session_service = InMemorySessionService()
+_runner = runners.Runner(
+    agent=fan_match_agent,
+    app_name="fanpulse",
+    session_service=_session_service,
+)
 
 
 async def run_fan_match_agent(fans: list) -> list:
@@ -37,8 +44,19 @@ async def run_fan_match_agent(fans: list) -> list:
     rpm = rate_limiter.current_rpm
     print(f"[FAN MATCH] Gemini call — RPM usage: {rpm}/10 — analysing {len(fans)} fans")
     try:
-        result = await _fan_match_tool.run_async(input=json.dumps(fans))
-        matches = json.loads(result)
+        session = await _session_service.create_session(app_name="fanpulse", user_id="system")
+        result_text = ""
+        async for evt in _runner.run_async(
+            user_id="system",
+            session_id=session.id,
+            new_message=types.Content(
+                role="user",
+                parts=[types.Part(text=json.dumps(fans))]
+            ),
+        ):
+            if evt.is_final_response() and evt.content and evt.content.parts:
+                result_text = evt.content.parts[0].text
+        matches = json.loads(result_text)
         print(f"[FAN MATCH] Found {len(matches)} matches")
         return matches
     except Exception as e:

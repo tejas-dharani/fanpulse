@@ -11,8 +11,14 @@ def get_db():
     global _initialized, _db
     if not _initialized:
         cred_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "./serviceAccountKey.json")
-        cred = credentials.Certificate(cred_path)
-        firebase_admin.initialize_app(cred)
+        if os.path.exists(cred_path):
+            cred = credentials.Certificate(cred_path)
+        else:
+            # Cloud Run — use Application Default Credentials
+            cred = credentials.ApplicationDefault()
+        firebase_admin.initialize_app(cred, {
+            "projectId": os.environ.get("FIREBASE_PROJECT_ID", "aplg-59a7c"),
+        })
         _db = firestore.client()
         _initialized = True
     return _db
