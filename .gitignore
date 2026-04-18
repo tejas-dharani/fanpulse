@@ -17,5 +17,10 @@ frontend/out/
 frontend/.env.local
 .env
 
+# Firebase debug logs (may contain API keys)
+frontend/firebase-debug.log
+frontend/*.log
+*.log
+
 # OS
 .DS_Store
