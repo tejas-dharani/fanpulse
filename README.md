@@ -1,5 +1,5 @@
 # FanPulse — IPL Fan Connection Platform
-> Built at GDG Cloud New Delhi: Agentic Premier League | April 18, 2026 | RCB vs DC
+> Built at GDG Cloud Bengaluru: Agentic Premier League | April 18, 2026 | RCB vs DC
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-fanpulse--frontend-blue)](https://fanpulse-frontend-869301957926.asia-south1.run.app)
 [![Backend](https://img.shields.io/badge/Backend-Cloud%20Run-green)](https://fanpulse-backend-869301957926.asia-south1.run.app/health)
